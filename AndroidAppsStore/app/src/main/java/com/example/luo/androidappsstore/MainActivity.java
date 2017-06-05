@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.util.JsonWriter;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -61,6 +62,13 @@ public class MainActivity extends Activity {
         super.onCreate(icicle);
         setContentView(R.layout.activity_main);
         mGridView = (GridView)findViewById(R.id.gridview);
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                GridViewHolder holder = (GridViewHolder)view.getTag();
+                Log.v(TAG, "onItemClick() download url:" + holder.downloadUrl);
+            }
+        });
         mHandler = new UpdateUIHandler();
         checkPermission();
         new Thread(){
