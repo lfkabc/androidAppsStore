@@ -1,13 +1,18 @@
 package com.example.luo.androidappsstore;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.JsonWriter;
@@ -19,6 +24,8 @@ import android.widget.SimpleAdapter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import java.io.File;
@@ -30,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -54,7 +62,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mGridView = (GridView)findViewById(R.id.gridview);
         mHandler = new UpdateUIHandler();
-
+        checkPermission();
         new Thread(){
             @Override
             public void run() {
@@ -75,11 +83,27 @@ public class MainActivity extends Activity {
             }
         }
     }
-
+    void checkPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {//判断当前系统的版本
+            int checkWriteStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);//获取系统是否被授予该种权限
+            int checkReadStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);//获取系统是否被授予该种权限
+            Log.e(TAG, "checkPermission() ");
+            if (checkWriteStoragePermission != PackageManager.PERMISSION_GRANTED || checkReadStoragePermission != PackageManager.PERMISSION_GRANTED ) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 8);
+                Log.e(TAG, "checkPermission() not granted, request it");
+            }
+        }
+    }
 
     private String downLoadFile(String fileUrl) {
-        String fileName = Environment.DIRECTORY_DOWNLOADS + File.separator + fileUrl.split("/")[fileUrl.split("/").length -1];
+        String fileName = getFilesDir() + File.separator + fileUrl.split("/")[fileUrl.split("/").length -1];
         final File file = new File(fileName);
+        try{
+        if(!file.exists())
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         final Request request = new Request.Builder().url(fileUrl).build();
         OkHttpClient client = new OkHttpClient();
         final Call call = client.newCall(request);
@@ -135,13 +159,12 @@ public class MainActivity extends Activity {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new InputStreamReader(new FileInputStream(jsonFileName), "UTF-8"));
-            reader.beginArray();
-            gson.fromJson(reader, Item.class);
-            while (reader.hasNext()) {
-                itemlist.add((Item)gson.fromJson(reader, Item.class));
+            Type type = new TypeToken<ArrayList<JsonObject>>() { }.getType();
+            ArrayList<JsonObject> jsonObjects = new Gson().fromJson(reader, type);
+            for (JsonObject jsonObject : jsonObjects)
+            {
+                itemlist.add(new Gson().fromJson(jsonObject, Item.class));
             }
-
-            reader.endArray();
             reader.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

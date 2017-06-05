@@ -178,7 +178,7 @@ public class MyTools {
             writer.beginArray();
 
             for (String apk : apkList) {
-                String iconUrl = urlPre + "icon/" + (apk.substring(0, apk.indexOf(".apk")) + ".png");
+                String iconUrl = urlPre + "icons/" + (apk.substring(0, apk.indexOf(".apk")) + ".png");
                 String url = urlPre + "apks/" + apk;
                 Item item = new Item(apkMap.get(apk)[0], iconUrl, url, apkMap.get(apk)[1]);
                 gson.toJson(item, Item.class, writer);
