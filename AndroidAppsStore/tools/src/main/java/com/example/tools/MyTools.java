@@ -102,7 +102,7 @@ public class MyTools {
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains("application:")) {//application: label='UC浏览器' icon='res/drawable-hdpi/icon.png'
                     iconName = line.substring(line.lastIndexOf("/") + 1, line.lastIndexOf("'")).trim().toLowerCase();
-                    displayName = line.substring(line.indexOf("label=") + 1, line.indexOf("icon=") - 2);
+                    displayName = line.substring(line.indexOf("label=") + 6, line.indexOf("icon=") - 2);
                     apkMap.put(apkName, new String[]{displayName, md5});
                     System.out.println("display name : " + displayName);
                     break;
@@ -210,12 +210,6 @@ public class MyTools {
         String aaptFile = "../raw/aapt.exe";//"D:\\androidAppsStore\\raw\\aapt.exe";
         String outputJsonfile = "../raw/apks_info.json";//"D:\\androidAppsStore\\raw\\apks_info.json";
 
-        File file = new File("kkkkkkkk.txt");
-        if(!file.exists()) try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         MyTools tools = new MyTools();
         tools.extractIconsFromFile(apkFileDir, iconOutputDir, aaptFile);
         tools.generateJsonFile(outputJsonfile);
