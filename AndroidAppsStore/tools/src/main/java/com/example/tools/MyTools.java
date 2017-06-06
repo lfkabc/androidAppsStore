@@ -91,6 +91,8 @@ public class MyTools {
     private String getIconName(String apkName, String apkPath, String aaptPath) {
         String iconName = "";
         String displayName = "";
+        String version = "";
+        String pkgName = "";
         try {
             Runtime rt = Runtime.getRuntime();
             String cmd = aaptPath + " d badging " + apkPath;
@@ -103,11 +105,14 @@ public class MyTools {
                 if (line.contains("application:")) {//application: label='UC浏览器' icon='res/drawable-hdpi/icon.png'
                     iconName = line.substring(line.lastIndexOf("/") + 1, line.lastIndexOf("'")).trim().toLowerCase();
                     displayName = line.substring(line.indexOf("label=") + 7, line.indexOf("icon=") - 2);
-                    apkMap.put(apkName, new String[]{displayName, md5});
-                    System.out.println("display name : " + displayName);
-                    break;
+                }else if(line.contains("platformBuildVersionName")){//package: name='com.taobao.taobao' versionCode='87' versionName='3.9.1' platformBuildVersionName=''
+                    pkgName = line.split(" ")[1].replace("name=", "").replace("'", "");
+                    version = line.split(" ")[3].replace("versionName=", "").replace("'", "");;
                 }
             }
+            apkMap.put(apkName, new String[]{displayName, md5, pkgName, version});
+            System.out.println("display name : " + displayName + "   pkgName : " + pkgName + "   version : " + version);
+
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -180,7 +185,7 @@ public class MyTools {
             for (String apk : apkList) {
                 String iconUrl = urlPre + "icons/" + (apk.substring(0, apk.indexOf(".apk")) + ".png");
                 String url = urlPre + "apks/" + apk;
-                Item item = new Item(apkMap.get(apk)[0], iconUrl, url, apkMap.get(apk)[1]);
+                Item item = new Item(apkMap.get(apk)[0], iconUrl, url, apkMap.get(apk)[1], apkMap.get(apk)[2], apkMap.get(apk)[3]);
                 gson.toJson(item, Item.class, writer);
             }
 

@@ -33,6 +33,7 @@ public class GridAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.grid_item, null);
             viewHolder.imageView = (ImageView)convertView.findViewById(R.id.item_image);
             viewHolder.textView = (TextView)convertView.findViewById(R.id.item_title);
+            viewHolder.progressView = (TextView)convertView.findViewById(R.id.download_progress);
             convertView.setTag(viewHolder);
         }else{
             viewHolder = (GridViewHolder) convertView.getTag();

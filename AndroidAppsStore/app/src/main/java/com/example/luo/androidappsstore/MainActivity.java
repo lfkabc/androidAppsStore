@@ -5,12 +5,14 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -53,9 +56,11 @@ public class MainActivity extends Activity {
     private static final String JSON_FILE = "https://raw.githubusercontent.com/lfkabc/androidAppsStore/master/raw/apks_info.json";
     private Handler mHandler;
     private static final int MSG_UPDATE_GRIDVEIW = 1;
+    private static final int MSG_UPDATE_PROGRESS = 2;
 
     private GridAdapter mAdapter;
     private GridView mGridView;
+    private TextView mProgressView;
 
     @Override
     public void onCreate(Bundle icicle)   {
@@ -67,8 +72,11 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 GridViewHolder holder = (GridViewHolder)view.getTag();
                 Log.v(TAG, "onItemClick() download url:" + holder.downloadUrl);
+                downLoadFile(holder.downloadUrl);
+                mProgressView = holder.progressView;
             }
         });
+
         mHandler = new UpdateUIHandler();
         checkPermission();
         new Thread(){
@@ -88,6 +96,12 @@ public class MainActivity extends Activity {
             switch (msg.what){
                 case MSG_UPDATE_GRIDVEIW:
                     mGridView.setAdapter(mAdapter);
+                    break;
+
+                case MSG_UPDATE_PROGRESS:
+                    if(mProgressView != null){
+                        mProgressView.setText((String)msg.obj);
+                    }
             }
         }
     }
@@ -104,12 +118,17 @@ public class MainActivity extends Activity {
     }
 
     private String downLoadFile(String fileUrl) {
-        String fileName = getFilesDir() + File.separator + fileUrl.split("/")[fileUrl.split("/").length -1];
+
+        //final String fileName = getFilesDir() + File.separator + fileUrl.split("/")[fileUrl.split("/").length -1];
+        final String fileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                File.separator + fileUrl.split("/")[fileUrl.split("/").length -1];
         final File file = new File(fileName);
         try{
         if(!file.exists())
             file.createNewFile();
+            Log.e(TAG, "downLoadFile() create file:" + fileName);
         } catch (IOException e) {
+            Log.e(TAG, "downLoadFile() error !!   create file:" + fileName);
             e.printStackTrace();
         }
         final Request request = new Request.Builder().url(fileUrl).build();
@@ -137,8 +156,18 @@ public class MainActivity extends Activity {
                         current += len;
                         fos.write(buf, 0, len);
                         Log.e(TAG, "total:current------>" +  total + ":" + current);
+                        Message msg = mHandler.obtainMessage(MSG_UPDATE_PROGRESS);
+                        msg.obj = "downloading:" + total + "/" + current;
+                        mHandler.sendMessage(msg);
                     }
                     fos.flush();
+                    mProgressView = null;
+                    if(fileName.endsWith(".apk")){
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+                        //startActivity(intent);
+                    }
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());
                 } finally {

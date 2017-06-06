@@ -10,5 +10,6 @@ import android.widget.TextView;
 public class GridViewHolder {
     ImageView imageView;
     TextView textView;
+    TextView progressView;
     String downloadUrl;
 }

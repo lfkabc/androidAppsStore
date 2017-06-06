@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout android:id="@+id/LinearLayout01"
-    android:layout_width="200dp" xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="280dp" android:orientation="vertical">
-    <ImageView android:layout_width="200dp"
-        android:layout_height="200dp" android:id="@+id/item_image" />
-    <TextView android:layout_height="200dp"
-        android:textSize="20sp" android:layout_width="80dp"
+    android:layout_width="160dp" xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="240dp" android:orientation="vertical">
+    <ImageView android:layout_width="160dp"
+        android:layout_height="160dp" android:id="@+id/item_image" />
+    <TextView android:layout_height="60dp"
+        android:textSize="20sp" android:layout_width="160dp"
+        android:maxLines="1" android:textAlignment="center"
         android:id="@+id/item_title" />
-</LinearLayout>  
+    <TextView android:layout_height="20dp"
+        android:textSize="10sp" android:layout_width="160dp"
+        android:maxLines="1" android:textAlignment="center"
+        android:textColor="@color/colorAccent"
+        android:id="@+id/download_progress" />
+    </LinearLayout>
